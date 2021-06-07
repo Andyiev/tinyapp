@@ -9,8 +9,9 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
-app.get("/", (req, res) => {// the respond page when typing localhost:8080 in browser
-  res.send("Hello!");
+app.get("/", (req, res) => {
+  const templateVars = { greeting: 'Hello World!' };//new route handler for "hello world" and use res.render() to get this string formated (rendered from another file). 
+  res.render("hello_world", templateVars);
 });
 
 app.get("/hello", (req, res) => {
@@ -18,7 +19,7 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };//new route handler for "/urls" and use res.render() to pass the URL data to our template. 
+  const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
