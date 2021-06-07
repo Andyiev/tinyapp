@@ -17,8 +17,9 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
-app.get("/urls.json", (req, res) => {// getting an object [as an array] of our urlDatabase ]
-  res.json(urlDatabase);
+app.get("/urls", (req, res) => {
+  const templateVars = { urls: urlDatabase };//new route handler for "/urls" and use res.render() to pass the URL data to our template. 
+  res.render("urls_index", templateVars);
 });
 
 app.get("/set", (req, res) => {
