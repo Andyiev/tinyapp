@@ -7,8 +7,12 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
-app.get("/", (req, res) => {
+app.get("/", (req, res) => {// the respond page when typing localhost:8080 in browser
   res.send("Hello!");
+});
+
+app.get("/urls.json", (req, res) => {// getting an object [as an array] of our urlDatabase
+  res.json(urlDatabase);
 });
 
 app.listen(PORT, () => {
