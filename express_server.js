@@ -11,7 +11,11 @@ app.get("/", (req, res) => {// the respond page when typing localhost:8080 in br
   res.send("Hello!");
 });
 
-app.get("/urls.json", (req, res) => {// getting an object [as an array] of our urlDatabase
+app.get("/hello", (req, res) => {
+  res.send("<html><body>Hello <b>World</b></body></html>\n");
+});
+
+app.get("/urls.json", (req, res) => {// getting an object [as an array] of our urlDatabase ]
   res.json(urlDatabase);
 });
 
