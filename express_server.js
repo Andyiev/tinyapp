@@ -9,6 +9,10 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const params = {
+
+}
+
 app.get("/", (req, res) => {
   const templateVars = { greeting: 'Hello World!' };//new route handler for "hello world" and use res.render() to get this string formated (rendered from another file). 
   res.render("hello_world", templateVars);
@@ -21,6 +25,12 @@ app.get("/hello", (req, res) => {
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
+});
+
+app.get("/urls/:shortURL", (req, res) => {
+  let temp = req.params.shortURL; // temp will have the value of shortURL, which is what we type in browser after /urls/:
+  const templateVars = { shortURL: temp, longURL: urlDatabase[temp] };
+  res.render("urls_show", templateVars);
 });
 
 app.get("/set", (req, res) => {
