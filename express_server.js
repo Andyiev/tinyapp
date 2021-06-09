@@ -32,7 +32,11 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const userId = req.cookies["username"];
+  const templateVars = {
+    username: userId
+  };
+  res.render("urls_new", templateVars);
 });
 
 app.post("/urls", (req, res) => {
@@ -46,6 +50,11 @@ app.post("/login", function(req, res){
   res.cookie("username", req.body.username );
   console.log(res.cookies);
   res.redirect("/urls");
+});
+
+app.post("/logout", (req, res) => {
+  res.clearCookie("username");
+  res.redirect("/urls");
 })
 
 app.get("/urls", (req, res) => {
@@ -55,8 +64,9 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
+  const userId = req.cookies["username"];
   let temp = req.params.shortURL; //temp will have the value of shortURL, which is what we type in browser after /urls/:
-  const templateVars = { shortURL: temp, longURL: urlDatabase[temp] };
+  const templateVars = { shortURL: temp, longURL: urlDatabase[temp], username: userId };
   res.render("urls_show", templateVars);
 });
 
