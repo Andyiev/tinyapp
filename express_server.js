@@ -37,12 +37,17 @@ app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
   //console.log(urlDatabase);
-  console.log(req.body);  // Log the POST request body to the console
+  //console.log(req.body);  // Log the POST request body to the console
   //console.log(urlDatabase[shortURL]);// Log the longURL
   //console.log(shortURL);//Log the shorURL
   //res.send("Ok");         // Respond with 'Ok' (we will replace this)
   res.redirect(`/urls/${shortURL}`);
 });
+
+app.post("/login", function(req, res){
+  res.cookie("username", req.body.username);
+  res.redirect("/urls");
+})
 
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
