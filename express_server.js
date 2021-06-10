@@ -34,6 +34,15 @@ const generateRandomString = function() {
   return randomString;
 };
 
+const findUserByEmail = (email, users) => {
+  for (let user of Object.keys(users)) {
+    if (users[user].email === email) {
+      return users[user];
+    }
+  }
+  //if not match
+  return false;
+};
 
 app.get("/", (req, res) => {
   const templateVars = { greeting: 'Hello World!' };//new route handler for "hello world" and use res.render() to get this string formated (rendered from another file). 
@@ -78,15 +87,21 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  const userId = generateRandomString();// Take an email, take password from register form. Plus gener random ID
-  users[userId] = {
-    id: userId,
-    email: email,
-    password: password
+  if (email === '' || password === '') {
+    res.send('Error: You need an Email and Password to Register', 400);
   }
-  res.cookie('user_id', userId);
-  //res.cookie("email", email);
-  res.redirect("/urls");
+  if (findUserByEmail(email, users)) {
+    res.send('403: Bad Request', 400);
+  } else {
+    const userId = generateRandomString();// Take an email, take password from register form. Plus gener random ID
+    users[userId] = {
+      id: userId,
+      email,
+      password
+    };
+    res.cookie('user_id', userId);
+    res.redirect("/urls");
+  }
 });
 
 app.get("/urls", (req, res) => {
