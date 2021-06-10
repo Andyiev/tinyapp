@@ -7,22 +7,22 @@
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
-        <% if (username) { %>
+        <% if (user) { %>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
         <% } %>
       </div>
     </div>
     <div>
-      <% if (!username) { %>
+      <% if (!user) { %>
         <form action="/login" method="POST">
-          <label for="username">Name</label>
-          <input id="username" name="username">
+          <label for="user">User</label>
+          <input id="user" name="user">
           <input type="submit" value="Login">
         </form>
         <% } else {%>
         <div>
           <form action="/logout" method="POST">
-            <label for="username"><%= username%></label>
+            <label for="user"><%= user.email%></label>
             <input type="submit" value="Logout">
           </form> 
         </div>
