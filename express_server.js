@@ -67,11 +67,20 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
-app.post("/login", function(req, res){
-  //console.log(req.body);
-  res.cookie("username", req.body.username );
-  console.log(res.cookies);
-  res.redirect("/urls");
+app.get('/login', (req, res) => {
+  let templateVars = {user: users[req.cookies['user_id']]};
+  res.render('urls_login', templateVars);
+});
+
+app.post('/login', (req, res) => {
+  //let password = req.body.password;
+  let user = findUserByEmail(req.body.email,users);
+  if (user && user.password === req.body.password) {
+    res.cookie('user_id', user.id);
+    res.redirect('/urls');
+  } else {
+    res.send('403: Forbidden Error', 403);
+  }
 });
 
 app.post("/logout", (req, res) => {

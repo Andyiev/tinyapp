@@ -13,19 +13,14 @@
       </div>
     </div>
     <div>
-      <% if (!user) { %>
-        <form action="/login" method="POST">
-          <label for="user">User</label>
-          <input id="user" name="user">
-          <input type="submit" value="Login">
+      <% if (user) {%>
+        <form class="form-inline" action="logout" method="POST">
+          <label for="logout">Logged In As: <%= user["email"] %></label>
+            <button type="submit" class="btn btn-outline-dark">logout</button>
         </form>
-        <% } else {%>
-        <div>
-          <form action="/logout" method="POST">
-            <label for="user"><%= user.email%></label>
-            <input type="submit" value="Logout">
-          </form> 
-        </div>
+        <% } else { %>
+      <a href="/login">Login</a>
+      <a href="/register">Register</a>
       <% } %>
       
      
