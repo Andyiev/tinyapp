@@ -64,7 +64,7 @@ app.get("/urls/new", (req, res) => {
   const userId = req.cookies["user_id"];
   if (!userId) {
     // if user is not logged , he will be redirected to the main page again
-    return res.redirect('/urls');
+    return res.redirect('/login');
 
   }
   const templateVars = {
@@ -74,10 +74,14 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  const shortURL = generateRandomString();
-  urlDatabase[shortURL] = {longURL: req.body.longURL, userID: users[req.cookies["user_id"]]["id"]};
-  console.log(" ID from Object ", {longURL: req.body.longURL, userID: users[req.cookies["user_id"]]["id"]})
-  console.log(" urlDatabase ", urlDatabase);
+  let longURL = req.body.longURL;
+  let shortURL = generateRandomString();
+  urlDatabase[shortURL] = {
+    longURL: longURL, 
+    userID: users[req.cookies["user_id"]]};
+  //urlDatabase[shortURL] = {longURL: req.body.longURL, userID: users[req.cookies["user_id"]]["id"]};
+  //console.log(" ID from Object ", {longURL: req.body.longURL, userID: users[req.cookies["user_id"]]["id"]})
+  //console.log(" urlDatabase ", urlDatabase);
   //urlDatabase[shortURL] = req.body.longURL;
   res.redirect(`/urls/${shortURL}`);
 });
@@ -140,9 +144,13 @@ app.get("/urls", (req, res) => {
 
 //editing (getting to the edit form)
 app.get("/urls/:shortURL", (req, res) => {
-  //const userId = req.cookies["username"];
-  let temp = req.params.shortURL; //temp will have the value of shortURL, which is what we type in browser after /urls/:
-  const templateVars = { shortURL: temp, longURL: urlDatabase[temp]["longURL"], user: users[req.cookies["user_id"]] };
+  const userId = req.cookies["user_id"];
+  let temp = req.params.shortURL;//temp will have the value of shortURL, which is what we type in browser after /urls/:
+  if (!userId) {
+    // if user is not logged , he will be redirected to the main page again
+    return res.redirect('/urls');
+  }
+  const templateVars = { shortURL: temp, longURL: urlDatabase[temp]["longURL"], user: users[userId] };
   res.render("urls_show", templateVars);
 });
 
@@ -150,6 +158,17 @@ app.get("/u/:shortURL", (req, res) => {
   let temp = req.params.shortURL;
   const longURL = urlDatabase[temp]["longURL"];
   res.redirect(longURL);
+});
+
+//Delete or remove an url
+app.get("/urls/:shortURL/delete", (req, res) => {
+  const userId = req.cookies["user_id"];
+  if (!userId) {
+    // if user is not logged , he will be redirected to the main page again
+    return res.redirect('/login');
+  }
+  delete urlDatabase[req.params.shortURL];
+  res.redirect("/login");
 });
 
 //Delete or remove an url
@@ -166,7 +185,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 //Editing of existing info
 app.post("/urls/:id", (req, res) => {
   const shortURL = req.params.id;
-  urlDatabase[shortURL] = req.body.longURL;
+  urlDatabase[shortURL] = {longURL: req.body.longURL, userID: users[req.cookies["user_id"]]};
   res.redirect("/urls");// redirecting to the main page after editing or submitting of a new
 });
  
