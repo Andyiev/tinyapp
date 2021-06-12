@@ -134,7 +134,7 @@ app.post('/login', (req, res) => {
   let user = findUserByEmail(req.body.email,users);
   
   if (user && bcrypt.compareSync(req.body.password, user.password)) {
-    console.log(" this is from checkin ", user.password);
+    //console.log(" this is from checkin ", user.password);
   //if (user && user.password === req.body.password) {
     res.cookie('user_id', user.id);
     //console.log(user.id);
