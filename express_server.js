@@ -1,4 +1,5 @@
 const express = require("express");
+const { findUserByEmail } = require("./helpers");
 const app = express();
 const cookieSession = require("cookie-session");
 const bcrypt = require('bcrypt');
@@ -66,15 +67,15 @@ const generateRandomString = function() {
   return randomString;
 };
 
-const findUserByEmail = (email, users) => {
-  for (let user of Object.keys(users)) {
-    if (users[user].email === email) {
-      return users[user];
-    }
-  }
-  //if not match
-  return false;
-};
+// const findUserByEmail = (email, users) => {
+//   for (let user of Object.keys(users)) {
+//     if (users[user].email === email) {
+//       return users[user];
+//     }
+//   }
+//   //if not match
+//   return false;
+// };
 
 const urlsForUser = function(id) {
 //console.log("this is id ", id);
@@ -174,7 +175,7 @@ app.post("/register", (req, res) => {
       //res.cookie('user_id', userId);
       res.redirect("/urls");
   } else {
-    res.status(403).send('403: Bad Request'); //"you have to use another combination"
+    res.status(403).send('403: Bad Request. You have to use another combination"');
   }  
 });
 
