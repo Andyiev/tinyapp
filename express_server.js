@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const cookieParser = require("cookie-parser");
+const bcrypt = require('bcrypt');
 const PORT = 8080; // default port 8080
 
 app.set("view engine", "ejs");
@@ -30,6 +31,21 @@ const urlDatabase = {
   S152tx: { longURL: "http://www.tsn.ca", userID: "user2RandomID" }
 };
 
+const addNewUser = (email, textPassword) => {
+  // Generate a random id
+  const userId = generateRandomString();
+  const password = textPassword;
+  
+  const newUserObj = {
+    id: userId,
+    email,
+    password,
+  };
+  // Add the user Object into the users
+  users[userId] = newUserObj;
+  // return the id of the user
+  return userId;
+};
 
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
@@ -140,12 +156,13 @@ app.post("/register", (req, res) => {
   if (findUserByEmail(email, users)) {
     res.send('403: Bad Request', 400);
   } else {
-    const userId = generateRandomString();// Take an email, take password from register form. Plus gener random ID
-    users[userId] = {
-      id: userId,
-      email,
-      password
-    };
+    const userId = addNewUser(email, password);
+    // const userId = generateRandomString();// Take an email, take password from register form. Plus gener random ID
+    // users[userId] = {
+    //   id: userId,
+    //   email,
+    //   password
+    // };
     res.cookie('user_id', userId);
     res.redirect("/urls");
   }
