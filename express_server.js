@@ -2,7 +2,9 @@ const express = require("express");
 const app = express();
 const cookieParser = require("cookie-parser");
 const bcrypt = require('bcrypt');
+const saltRounds = 10;
 const PORT = 8080; // default port 8080
+const bodyParser = require("body-parser");
 
 app.set("view engine", "ejs");
 
@@ -10,15 +12,16 @@ const users = {
   "2jcseb": {
     id: "2jcseb", 
     email: "user@example.com", 
-    password: "purple"
+    password: "$2b$10$XUzyCfgJT1PMRgTwiLZP/uFYI3TmxXTEra/Ci0437Q3XPyZ8vIXWK" //"purple"
   },
  "user2RandomID": {
     id: "user2RandomID", 
     email: "user2@example.com", 
-    password: "dish"
+    password: "$2b$10$6c0cf704ScGMXHKguGXbO.UM7qZg6nHrP/PipzbQ/uU8MARA1qEKu" //"dish"
   }
 };
 
+//console.log(" FOR user@example.com ", bcrypt.hashSync("dish", saltRounds));
 // const urlDatabase = {
 //   "b2xVn2": "http://www.lighthouselabs.ca",
 //   "9sm5xK": "http://www.google.com",
@@ -34,8 +37,9 @@ const urlDatabase = {
 const addNewUser = (email, textPassword) => {
   // Generate a random id
   const userId = generateRandomString();
-  const password = textPassword;
-  
+  //const password = textPassword;
+  const password = bcrypt.hashSync(textPassword, saltRounds);
+  //console.log(password);
   const newUserObj = {
     id: userId,
     email,
@@ -43,11 +47,11 @@ const addNewUser = (email, textPassword) => {
   };
   // Add the user Object into the users
   users[userId] = newUserObj;
+  
   // return the id of the user
   return userId;
 };
 
-const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 
@@ -128,7 +132,10 @@ app.get('/login', (req, res) => {
 app.post('/login', (req, res) => {
   //let password = req.body.password;
   let user = findUserByEmail(req.body.email,users);
-  if (user && user.password === req.body.password) {
+  
+  if (user && bcrypt.compareSync(req.body.password, user.password)) {
+    console.log(" this is from checkin ", user.password);
+  //if (user && user.password === req.body.password) {
     res.cookie('user_id', user.id);
     //console.log(user.id);
     res.redirect('/urls');
