@@ -9,7 +9,9 @@
 <body>
 <header>
   <%- include('partials/_header'); %>
+ 
 </header>
+ <% if (longURL !== null) { %>
   <div class="card text-center">
       <div class="card-header"></div>
       <div class="card-body">
@@ -25,6 +27,11 @@
         </div>
       </form>
     </div>
+    <% } else { %>
+      <div> <h3>
+        This Url does not belong to you
+      </h3></div>
+      <% } %>
   </div>
   
   <!-- Bootstrap JS -->
