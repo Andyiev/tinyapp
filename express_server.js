@@ -1,10 +1,17 @@
 const express = require("express");
 const app = express();
-const cookieParser = require("cookie-parser");
+const cookieSession = require("cookie-session");
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const PORT = 8080; // default port 8080
-const bodyParser = require("body-parser");
+// const bodyParser = require("body-parser");
+//app.use(bodyParser.urlencoded({extended: true}));
+//app.use(cookieParser());
+app.use(express.urlencoded({extended: true}));
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key1', 'key2']
+}));
 
 app.set("view engine", "ejs");
 
@@ -52,8 +59,6 @@ const addNewUser = (email, textPassword) => {
   return userId;
 };
 
-app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser());
 
 const generateRandomString = function() {
   let randomString = Math.random().toString(36).substring(2,8);
@@ -97,7 +102,7 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const userId = req.cookies["user_id"];
+  const userId = req.session["user_id"];
   if (!userId) {
     // if user is not logged , he will be redirected to the main page again
     return res.redirect('/login');
@@ -115,16 +120,16 @@ app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
   urlDatabase[shortURL] = {
     longURL: longURL, 
-    userID: req.cookies["user_id"]};
-  //urlDatabase[shortURL] = {longURL: req.body.longURL, userID: users[req.cookies["user_id"]]["id"]};
-  //console.log(" ID from Object ", {longURL: req.body.longURL, userID: users[req.cookies["user_id"]]["id"]})
+    userID: req.session["user_id"]};
+  //urlDatabase[shortURL] = {longURL: req.body.longURL, userID: users[req.session["user_id"]]["id"]};
+  //console.log(" ID from Object ", {longURL: req.body.longURL, userID: users[req.session["user_id"]]["id"]})
   //console.log(" urlDatabase  from app.post /urls ", urlDatabase);
   //urlDatabase[shortURL] = req.body.longURL;
   res.redirect(`/urls/${shortURL}`);
 });
 
 app.get('/login', (req, res) => {
-  let templateVars = {user: users[req.cookies['user_id']]};
+  let templateVars = {user: users[req.session['user_id']]};
   //console.log(templateVars);
   res.render('urls_login', templateVars);
 });
@@ -136,7 +141,8 @@ app.post('/login', (req, res) => {
   if (user && bcrypt.compareSync(req.body.password, user.password)) {
     //console.log(" this is from checkin ", user.password);
   //if (user && user.password === req.body.password) {
-    res.cookie('user_id', user.id);
+    //res.cookie('user_id', user.id);
+    req.session["user_id"] = user.id;
     //console.log(user.id);
     res.redirect('/urls');
   } else {
@@ -145,50 +151,47 @@ app.post('/login', (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  req.session["user_id"] = null;
+  //res.clearCookie("user_id");
   res.redirect("/login");
 });
 
 app.get("/register", (req, res) => {
-  const templateVars = { user: users[req.cookies["user_id"]] };
+  const templateVars = { user: users[req.session["user_id"]] };
   res.render("register", templateVars)
 });
 
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
+  const user = findUserByEmail(email, users);
   if (email === '' || password === '') {
-    res.send('Error: You need an Email and Password to Register', 400);
-  }
-  if (findUserByEmail(email, users)) {
-    res.send('403: Bad Request', 400);
+    return res.send('Error: You need an Email and Password to Register', 400);
+  } 
+  if (!user) {
+      const userId = addNewUser(email, password);
+      req.session["user_id"] = userId;
+      //res.cookie('user_id', userId);
+      res.redirect("/urls");
   } else {
-    const userId = addNewUser(email, password);
-    // const userId = generateRandomString();// Take an email, take password from register form. Plus gener random ID
-    // users[userId] = {
-    //   id: userId,
-    //   email,
-    //   password
-    // };
-    res.cookie('user_id', userId);
-    res.redirect("/urls");
-  }
+    res.status(403).send('403: Bad Request'); //"you have to use another combination"
+  }  
 });
 
 app.get("/urls", (req, res) => {
-  const userLogged = req.cookies["user_id"];
+  const userLogged = req.session["user_id"];
   if (!userLogged) {
     res.send("Please Register or Login!");
     return;
   }
-  const newUrlDatabase = urlsForUser(req.cookies["user_id"]);
-  const templateVars = { urls: newUrlDatabase, user: users[req.cookies["user_id"]] };
+  const newUrlDatabase = urlsForUser(req.session["user_id"]);
+  const templateVars = { urls: newUrlDatabase, user: users[req.session["user_id"]] };
   res.render("urls_index", templateVars);
 });
 
 //editing (getting to the edit form)
 app.get("/urls/:shortURL", (req, res) => {
-  const userId = req.cookies["user_id"];
+  const userId = req.session["user_id"];
   //console.log(" this user ID ", userId);
   let temp = req.params.shortURL;//temp will have the value of shortURL, which is what we type in browser after /urls/:
   if (!userId) {
@@ -215,7 +218,7 @@ app.get("/u/:shortURL", (req, res) => {
 
 //Delete or remove an url
 app.get("/urls/:shortURL/delete", (req, res) => {
-  const userId = req.cookies["user_id"];
+  const userId = req.session["user_id"];
   let temp = req.params.shortURL;
   if (!userId) {
     // if user is not logged , he will be redirected to the main login page
@@ -230,7 +233,7 @@ app.get("/urls/:shortURL/delete", (req, res) => {
 
 //Delete or remove an url
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const userId = req.cookies["user_id"];
+  const userId = req.session["user_id"];
   if (!userId) {
     // if user is not logged , he will be redirected to the main page again
     return res.redirect('/login');
@@ -242,7 +245,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 //Editing of existing info
 app.post("/urls/:id", (req, res) => {
   const shortURL = req.params.id;
-  urlDatabase[shortURL] = {longURL: req.body.longURL, userID: req.cookies["user_id"]};
+  urlDatabase[shortURL] = {longURL: req.body.longURL, userID: req.session["user_id"]};
   //console.log(" from app-post /urls/id ", urlDatabase);
   res.redirect("/urls");// redirecting to the main page after editing or submitting of a new
 });
