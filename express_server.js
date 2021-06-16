@@ -57,23 +57,18 @@ const addNewUser = (email, textPassword) => {
 // Generating random string for user's id and urls id
 const generateRandomString = function() {
   let randomString = Math.random().toString(36).substring(2,8);
-  //console.log("random", randomString);
   return randomString;
 };
 
 // return short url - longurl pair for user
 const urlsForUser = function(id) {
   let newUrlDatabase = {};
-  //console.log(urlDatabase);
   for (let key in urlDatabase) {
-    //console.log(" Key ", key);
     let urlObject = urlDatabase[key];
-    //console.log(" urlObject from urlsForUser function ", urlObject);
     if (urlObject.userID === id) {
       newUrlDatabase[key] = urlObject;
     }
   }
-  //console.log(newUrlDatabase);
   return newUrlDatabase;
 };
 
@@ -111,7 +106,6 @@ app.post("/urls", (req, res) => {
 // login section
 app.get('/login', (req, res) => {
   let templateVars = {user: users[req.session['user_id']]};
-  //console.log(templateVars);
   res.render('urls_login', templateVars);
 });
 
@@ -122,7 +116,6 @@ app.post('/login', (req, res) => {
   //if (user && user.password === req.body.password) {
     //res.cookie('user_id', user.id);
     req.session["user_id"] = user.id;
-    //console.log(user.id);
     res.redirect('/urls');
   } else {
     res.status(403).send("Forbidden Error: You are not registered of using wrong combination.");
@@ -163,7 +156,8 @@ app.post("/register", (req, res) => {
 app.get("/urls", (req, res) => {
   const userLogged = req.session["user_id"];
   if (!userLogged) {
-    res.send("Please Register or Login!");
+    //res.send("Please Register or Login!");
+    res.status(403).send('403: Bad Request. You have to be logged in!');
     return;
   }
   const newUrlDatabase = urlsForUser(req.session["user_id"]);
@@ -174,19 +168,21 @@ app.get("/urls", (req, res) => {
 //editing (getting to the edit form)
 app.get("/urls/:shortURL", (req, res) => {
   const userId = req.session["user_id"];
-  //console.log(" this user ID ", userId);
-  let temp = req.params.shortURL;//temp will have the value of shortURL, which is what we type in browser after /urls/:
+  const shortURL = req.params.shortURL;
+  //temp will have the value of shortURL, which is what we type in browser after /urls/:
   if (!userId) {
     // if user is not logged , he will be redirected to the main page again
     return res.redirect('/login');
   }
-  if (urlDatabase[temp].userID !== userId) {
-    //return res.send(" This url does not belong to this user");
-    return res.render("urls_show",{ shortURL: null, longURL: null, user: users[userId] });
+  const url = urlDatabase[shortURL];
+  if (!url) {
+    return res.send("This url does exist!");
   }
-  let longURL = urlDatabase[temp] && urlDatabase[temp]["longURL"];
-  const templateVars = { shortURL: temp, longURL: longURL, user: users[userId] };
-  // console.log(" whole urlDatabase ", urlDatabase);
+  if (url.userID !== userId) {
+    return res.send(" This url does not belong to this user");
+  }
+  let longURL = urlDatabase[shortURL] && urlDatabase[shortURL]["longURL"];
+  const templateVars = { shortURL, longURL: longURL, user: users[userId] };
   res.render("urls_show", templateVars);
 });
 
@@ -228,7 +224,7 @@ app.post("/urls/:id", (req, res) => {
   const shortURL = req.params.id;
   urlDatabase[shortURL] = {longURL: req.body.longURL, userID: req.session["user_id"]};
   //console.log(" from app-post /urls/id ", urlDatabase);
-  res.redirect("/urls");// redirecting to the main page after editing or submitting of a new
+  res.redirect("/urls");
 });
  
 app.listen(PORT, () => {
