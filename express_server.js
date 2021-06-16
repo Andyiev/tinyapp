@@ -1,8 +1,6 @@
 const express = require("express");
 const { findUserByEmail } = require("./helpers");
-const { addNewUser } = require("./helpers");
 const { generateRandomString } = require("./helpers");
-const { urlsForUser } = require("./helpers");
 const app = express();
 const cookieSession = require("cookie-session");
 const bcrypt = require('bcrypt');
@@ -38,6 +36,35 @@ const urlDatabase = {
   t2xVn2: { longURL: "http://www.lighthouselabs.ca", userID: "2jcseb" },
   rsm5xK: { longURL: "http://www.google.com", userID: "user2RandomDD" },
   S152tx: { longURL: "http://www.tsn.ca", userID: "user2RandomID" }
+};
+
+// return short url - longurl pair for user
+const urlsForUser = function(id) {
+  let newUrlDatabase = {};
+  for (let key in urlDatabase) {
+    let urlObject = urlDatabase[key];
+    if (urlObject.userID === id) {
+      newUrlDatabase[key] = urlObject;
+    }
+  }
+  return newUrlDatabase;
+};
+
+// adding a new user
+const addNewUser = (email, textPassword) => {
+  // Generate a random id
+  const userId = generateRandomString();
+  const password = bcrypt.hashSync(textPassword, saltRounds);
+  //console.log(password);
+  const newUserObj = {
+    id: userId,
+    email,
+    password,
+  };
+  // Add the user Object into the users
+  users[userId] = newUserObj;
+  // return the id of the user
+  return userId;
 };
 
 app.get("/", (req, res) => {
